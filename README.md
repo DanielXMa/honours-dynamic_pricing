@@ -1,8 +1,8 @@
 # honours-dynamic_pricing
-Honours Thesis Repository - Dynamic Pricing using Neural Networks.
+Honours Thesis Repository - Dynamic Pricing with Neural Networks.
 
 
-This repository contains all the relevant files and packages that I used for my Honours thesis.
+This repository contains all the relevant Python files and outputs that I produced for my Honours thesis.
 
 Packages used:
  - PyTorch
