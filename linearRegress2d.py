@@ -1,22 +1,19 @@
-# This is the RBF 2D Network, using K-Means Clustering.
+####### Linear Regression with the D_t dataset
 
 import os
 import pandas as pd
 import numpy as np
-from sklearn.cluster import KMeans
+# from lstmnn import SequenceDataset, LSTMForecaster
 from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 import math
-import time
-from rbfnet_funcs import *
+import matplotlib.pyplot as plt
 
-#### 2-Dimensional Case
-#### x is 2d, c is also now 2d
 
-# start = time.time()
-
-#### Use the p_total dataset first to test
 path = os.getcwd()
+
+#read csv file
 plane_sd = pd.read_csv(path + "/plane_sd.csv", header=None)
 y = plane_sd.to_numpy(dtype='float64')
 s, d = plane_sd.shape
@@ -32,21 +29,23 @@ X = np.array(tuples)
 y = np.ravel(y)
 y = y.reshape(len(y),1)
 
+model = LinearRegression()
+
 dataset = np.concatenate((X,y), axis = 1)
-clusters = 150 # This value can be changed
-print("k = ", clusters)
-M = 10 # even at M = 10, it takes a lot of time, and quite computationally expensive.
-        # I want to figure out a way to optimise the code if possible.
-ratio = np.array([0.5, 0.6, 0.7, 0.8, 0.9])
 train, test = train_test_split(dataset, test_size=0.1, random_state=1) # Attempt with random selection of points
 X_test = np.array([x[:2] for x in test])
 y_test = np.array([x[2] for x in test])
+sum_squares = sum(map(lambda i: i * i, y_test))
+len_y_test = len(y_test)
+
+M = 5 # Use same values that we had for RBF (M = 5 and 10)
+ratio = np.array([0.5, 0.6, 0.7, 0.8, 0.9])
 for j in ratio:
     print("Training Set Size = ", j)
     rmse = np.zeros(M)
     rel_rmse = np.zeros(M)
     for i in range(M):
-        print("M = ", i+1)
+        print("M = ",i+1)
         train_set, test_set = train_test_split(train, test_size=1-j, random_state=i+1) # Attempt with random selection of points
 
         # Order the training set in terms of the index.
@@ -56,16 +55,14 @@ for j in ratio:
         X_train = np.array([x[:2] for x in train_set])
         y_train = np.array([x[2] for x in train_set])
 
-        ##### Setting up the model #####
-        rbfnet = RBFNet2DKM(lr=1e-2, k=clusters, inferStds=True) # k adjusts the number of clusters in the training model.
-
-        rbfnet.fit(X_train, y_train)
-        y_pred = rbfnet.predict(X_test)
-
+        # Train the linear regression model
+        model.fit(X_train, y_train)
+        # Predict and calculate errors
+        y_pred = model.predict(X_test)
         # RMSE
         rmse[i] = math.sqrt(mean_squared_error(y_test, y_pred))
         # Relative RMSE
-        rel_rmse[i] = math.sqrt(len(y_test)*mean_squared_error(y_test, y_pred)/sum(i**2 for i in y_test))
+        rel_rmse[i] = math.sqrt(len_y_test*mean_squared_error(y_test, y_pred)/sum_squares)
 
     # Print RMSE for each training set ratio.    
     print(rmse)
@@ -75,7 +72,4 @@ for j in ratio:
     print(rel_rmse)
     print("Mean = ",np.mean(rel_rmse))
     print("Min = ",np.amin(rel_rmse))
-    print("Max = ",np.amax(rel_rmse))
-
-# end = time.time()
-# print(end - start) # Want to see how long the code will take to run.
+    print("Max = ",np.amax(rel_rmse))    

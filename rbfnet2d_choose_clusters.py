@@ -1,25 +1,29 @@
-# This is the RBF 2D Network, using K-Means Clustering.
+## RBFNet 2D Network Simulation Model, we obtain results from this code.
 
 import os
 import pandas as pd
 import numpy as np
-from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+from matplotlib import cm
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 import math
 import time
 from rbfnet_funcs import *
 
-#### 2-Dimensional Case
-#### x is 2d, c is also now 2d
-
-# start = time.time()
+start = time.time()
 
 #### Use the p_total dataset first to test
 path = os.getcwd()
 plane_sd = pd.read_csv(path + "/plane_sd.csv", header=None)
 y = plane_sd.to_numpy(dtype='float64')
 s, d = plane_sd.shape
+factor = [20, 20] 
+print("h =", factor[0])
+clusters = round((s-1)/factor[0])*round((d-1)/factor[1])
+print("clusters =", clusters)
+# w = np.random.randn(clusters)
+
 # print(s,d) ### s=101, d=151
 ls = np.linspace(0,s-1,s)
 ld = np.linspace(0,d-1,d)
@@ -33,8 +37,6 @@ y = np.ravel(y)
 y = y.reshape(len(y),1)
 
 dataset = np.concatenate((X,y), axis = 1)
-clusters = 150 # This value can be changed
-print("k = ", clusters)
 M = 10 # even at M = 10, it takes a lot of time, and quite computationally expensive.
         # I want to figure out a way to optimise the code if possible.
 ratio = np.array([0.5, 0.6, 0.7, 0.8, 0.9])
@@ -57,9 +59,10 @@ for j in ratio:
         y_train = np.array([x[2] for x in train_set])
 
         ##### Setting up the model #####
-        rbfnet = RBFNet2DKM(lr=1e-2, k=clusters, inferStds=True) # k adjusts the number of clusters in the training model.
+        rbfnet = RBFNet2DUG(lr=1e-2, inferStds=True) # k adjusts the number of clusters in the training model.
 
-        rbfnet.fit(X_train, y_train)
+        # rbfnet.fit(X_train, y_train)
+        rbfnet.fit_fixed_clusters(X_train, y_train, s, d, factor) # provide explanation on factor variable
         y_pred = rbfnet.predict(X_test)
 
         # RMSE
@@ -77,5 +80,6 @@ for j in ratio:
     print("Min = ",np.amin(rel_rmse))
     print("Max = ",np.amax(rel_rmse))
 
-# end = time.time()
-# print(end - start) # Want to see how long the code will take to run.
+
+end = time.time()
+print(end - start)

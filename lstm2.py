@@ -12,6 +12,7 @@ import torch.utils.data as data
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from lstm_funcs import *
 
 path = os.getcwd()
 
@@ -27,12 +28,9 @@ path = os.getcwd()
 # Also keep in mind of changin the ratio of trainig and test set.
 # structure of 
 
-
 # Another direction, can consider using a another route
 
-
 ## Also consider using other methods, regression
-
 
 ### p_total #####
 
@@ -45,7 +43,6 @@ y = p_total.to_numpy(dtype='float32')
 # Splitting data into train and test sets just for visualisation purposes to begin. (for p_total)
 l = len(p_total)
 x = np.linspace(0,l-1,l).reshape(l,1)
-
 
 ## Plots used to visualise how the data is split.
 x_train, x_test, y_train, y_test = train_test_split(x, p_total, test_size=0.2, random_state=None,shuffle=False)
@@ -109,20 +106,7 @@ test = np.float32(test)
 # Build LSTM Model
 
 # https://machinelearningmastery.com/lstm-for-time-series-prediction-in-pytorch/
-def create_dataset(dataset, lookback):
-    """Transform a time series into a prediction dataset
-    
-    Args:
-        dataset: A numpy array of time series, first dimension is the time steps
-        lookback: Size of window for prediction
-    """
-    X, y = [], []
-    for i in range(len(dataset)-lookback):
-        feature = dataset[i:i+lookback]
-        target = dataset[i+1:i+lookback+1]
-        X.append(feature)
-        y.append(target)
-    return torch.tensor(X), torch.tensor(y)
+
  
 lookback = 1
 X_train, y_train = create_dataset(train, lookback=lookback)
@@ -139,7 +123,8 @@ class AirModel(nn.Module):
         return x
  
 model = AirModel()
-optimizer = optim.Adam(model.parameters())
+print(model.parameters())
+optimizer = optim.Adam(model.parameters()) # Adam Optimizer
 loss_fn = nn.MSELoss()
 loader = data.DataLoader(data.TensorDataset(X_train, y_train), shuffle=True, batch_size=8)
  

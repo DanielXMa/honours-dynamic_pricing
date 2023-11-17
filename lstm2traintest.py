@@ -12,6 +12,7 @@ import torch.utils.data as data
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from lstm_funcs import *
 
 path = os.getcwd()
 
@@ -29,31 +30,6 @@ path = os.getcwd()
 # Another direction, can consider using a another route, if time is available
 
 ## Also consider using other methods, regression
-
-def create_dataset(dataset, lookback):
-    """Transform a time series into a prediction dataset
-    
-    Args:
-        dataset: A numpy array of time series, first dimension is the time steps
-        lookback: Size of window for prediction
-    """
-    X, y = [], []
-    for i in range(len(dataset)-lookback):
-        feature = dataset[i:i+lookback]
-        target = dataset[i+1:i+lookback+1]
-        X.append(feature)
-        y.append(target)
-    return torch.tensor(X), torch.tensor(y)
-
-class AirModel(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.lstm = nn.LSTM(input_size=1, hidden_size=50, num_layers=1, batch_first=True)
-        self.linear = nn.Linear(50, 1)
-    def forward(self, x):
-        x, _ = self.lstm(x)
-        x = self.linear(x)
-        return x
 
 ### p_total #####
 
@@ -76,9 +52,12 @@ x = np.linspace(0,l-1,l).reshape(l,1)
 ### Or reorder based on time on new time 
 
 dataset = np.concatenate((x,y), axis = 1)
-lookback = 1 # this value is changeable
 
-# Set up the test set
+# Intialise values for batch size and lookback
+batch_size = 5
+lookback = 20
+
+# Setting up the test set
 train, test = train_test_split(dataset, test_size=0.1, random_state=1) # Attempt with random selection of points
 test_size = len(test)
 test_set = sorted(test, key = lambda x: x[0])
@@ -92,7 +71,7 @@ loss_fn = nn.MSELoss()
 
 M = 50 # number of repetitions
 ratio = np.array([0.7, 0.8, 0.9])
-batch_size = 1
+
 print("lookback = ", lookback)
 print("batch_size = ", batch_size)
 for j in ratio:

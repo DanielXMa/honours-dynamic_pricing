@@ -1,7 +1,6 @@
 ### Attempt at LSTM
 
 import os
-import glob
 import pandas as pd
 import numpy as np
 # from lstmnn import SequenceDataset, LSTMForecaster
@@ -12,7 +11,7 @@ import torch.utils.data as data
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-
+from lstm_funcs import *
 path = os.getcwd()
 
 
@@ -33,21 +32,6 @@ path = os.getcwd()
 
 ## Also consider using other methods, regression
 
-def create_dataset(dataset, lookback):
-    """Transform a time series into a prediction dataset
-    
-    Args:
-        dataset: A numpy array of time series, first dimension is the time steps
-        lookback: Size of window for prediction
-    """
-    X, y = [], []
-    for i in range(len(dataset)-lookback):
-        feature = dataset[i:i+lookback]
-        target = dataset[i+1:i+lookback+1]
-        X.append(feature)
-        y.append(target)
-    return torch.tensor(X), torch.tensor(y)
-
 class AirModel(nn.Module):
     def __init__(self):
         super().__init__()
@@ -57,9 +41,6 @@ class AirModel(nn.Module):
         x, _ = self.lstm(x)
         x = self.linear(x)
         return x
- 
-
-
 
 ### p_total #####
 
@@ -93,7 +74,7 @@ test = np.float32(test)
 X_test, y_test = create_dataset(test, lookback=lookback)
 
 model = AirModel()
-optimizer = optim.Adam(model.parameters())
+optimizer = optim.Adam(model.parameters()) # Adam Optimizer
 loss_fn = nn.MSELoss()
 
 M = 50 # we fix the number of repetitions in this case
