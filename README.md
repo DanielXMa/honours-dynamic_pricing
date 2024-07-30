@@ -2,7 +2,7 @@
 Honours Thesis Repository - Dynamic Pricing with Neural Networks.
 
 
-This repository contains all the relevant Python files and outputs that I produced for my Honours thesis.
+This repository contains all the relevant Python files and outputs I produced for my Honours thesis project ending Nov 2023.
 
 Packages used:
  - PyTorch
